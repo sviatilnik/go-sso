@@ -5,17 +5,18 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/sviatilnik/sso/internal/sso/infrastructure/config"
-	"github.com/sviatilnik/sso/internal/sso/infrastructure/interfaces/http/handlers"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/sviatilnik/sso/internal/sso/infrastructure/config"
+	"github.com/sviatilnik/sso/internal/sso/infrastructure/interfaces/http/handlers"
 )
 
 func main() {
@@ -27,8 +28,8 @@ func main() {
 		return
 	}
 
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
 	mux := chi.NewRouter()
 	mux.Use(middleware.Logger)
@@ -51,10 +52,10 @@ func main() {
 		}
 	}()
 
-	<-shutdown
+	<-ctx.Done()
 	slog.Info("shutting down...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	err = server.Shutdown(ctx)

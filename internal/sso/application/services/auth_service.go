@@ -5,10 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"time"
+
 	"github.com/sviatilnik/sso/internal/sso/application"
 	"github.com/sviatilnik/sso/internal/sso/domain/user"
 	"github.com/sviatilnik/sso/internal/sso/infrastructure"
-	"time"
 )
 
 type AuthService interface {
@@ -70,4 +71,12 @@ func (i *AuthServiceImpl) generateTokens(userID string) (*application.LoginRespo
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+func (i *AuthServiceImpl) LoginByToken(ctx context.Context, token string) (*user.User, error) {
+	if token == "" {
+		return nil, errors.New("token is empty")
+	}
+
+	return nil, nil
 }

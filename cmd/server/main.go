@@ -15,8 +15,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/sviatilnik/sso/internal/sso/application/services"
+	"github.com/sviatilnik/sso/internal/sso/infrastructure"
 	"github.com/sviatilnik/sso/internal/sso/infrastructure/config"
 	"github.com/sviatilnik/sso/internal/sso/infrastructure/interfaces/http/handlers"
+	"github.com/sviatilnik/sso/internal/sso/infrastructure/persistence/postgres"
 )
 
 func main() {
@@ -37,7 +40,14 @@ func main() {
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
 
-	mux.Post("/api/v1/login", handlers.NewAuthHandler().Login)
+	userRepo := postgres.NewUserRepository(db)
+	auth := services.NewAuthService(
+		userRepo,
+		infrastructure.NewBcryptHasher(),
+		infrastructure.NewJWTTokenGenerator("my-super-secret", "1", "go-sso"),
+	)
+
+	mux.Post("/api/v1/login", handlers.NewAuthHandler(auth).Login)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", conf.Port),
@@ -45,7 +55,7 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("starting server ...")
+		slog.Info("starting server on " + server.Addr)
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error(err.Error())

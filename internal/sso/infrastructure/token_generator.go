@@ -16,11 +16,11 @@ type JWTTokenGenerator struct {
 	kid       string
 }
 
-func NewJWTTokenGenerator(secret string) TokenGenerator {
+func NewJWTTokenGenerator(secret, kid, issuer string) TokenGenerator {
 	return &JWTTokenGenerator{
 		secretKey: secret,
-		issuer:    "go-sso",
-		kid:       "1",
+		issuer:    issuer,
+		kid:       kid,
 	}
 }
 

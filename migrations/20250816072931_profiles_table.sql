@@ -10,8 +10,6 @@ CREATE TABLE profiles (
        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX idx_profiles_user_id ON profiles(user_id);
 -- +goose StatementEnd
 
 -- +goose Down

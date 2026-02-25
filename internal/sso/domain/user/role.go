@@ -18,5 +18,5 @@ type RoleRepository interface {
 	Update(ctx context.Context, role *Role) (*Role, error)
 	FindByID(ctx context.Context, id string) (*Role, error)
 	FindByName(ctx context.Context, name string) (*Role, error)
-	FindAll(ctx context.Context) ([]*Role, error)
+	GetAll(ctx context.Context) ([]*Role, error)
 }
